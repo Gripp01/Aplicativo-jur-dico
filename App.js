@@ -1,103 +1,136 @@
-import React, { Component } from "react";
-import { View, Text, Image, Platform, ScrollView } from 'react-native';
+// App.js
+import React, { useState } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, Alert, ScrollView } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 
-class App extends Component {
-  render() {
-    return (
-      <ScrollView>
-        <View style={{ padding: 10 }}>
-          <Text style={{ color: '#006400', fontSize: 25, marginBottom: 10 }}>
-            Áreas do Direito
-          </Text>
+const Drawer = createDrawerNavigator();
 
-          <Direito
-            imagem="https://fktadvogados.com.br/wp-content/uploads/2023/07/direito.jpg"
-            area="Direito Trabalhista"
-            descricao="Regula as relações entre empregadores e empregados, tratando de direitos como salário, jornada e condições de trabalho."
-          />
+function LoginScreen({ navigation }) {
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
 
-          <Direito
-            imagem="https://easyjur.com/blog/wp-content/uploads/2023/05/2-2.jpg"
-            area="Direito Criminal"
-            descricao="Responsável por lidar com crimes e punições, garantindo o julgamento justo e a defesa do acusado."
-          />
+  const handleLogin = () => {
+    if (email === 'teste@email.com' && senha === '1234') {
+      Alert.alert('✅ Login correto');
+      navigation.navigate('Dashboard');
+    } else {
+      Alert.alert('❌ Login incorreto');
+    }
+  };
 
-          <Direito
-            imagem="https://eliasecuryadv.com.br/wp-content/uploads/2024/06/Entenda-a-importancia-e-abrangencia-do-Direito-Civil.webp"
-            area="Direito Civil"
-            descricao="Trata dos direitos e deveres entre pessoas físicas e jurídicas, como contratos, heranças e propriedades."
-          />
-
-          <Direito
-            imagem="https://blog.estacio.br/wp-content/uploads/2024/06/Direito-ambiental.jpeg"
-            area="Direito Ambiental"
-            descricao="Visa proteger o meio ambiente, regulando o uso sustentável dos recursos naturais e punindo danos ambientais."
-          />
-
-          <Direito
-            imagem="https://www.ricardoribeiroadv.com.br/images/02.jpg"
-            area="Direito do Consumidor"
-            descricao="Defende os direitos dos consumidores nas relações de consumo, garantindo segurança, transparência e qualidade nos produtos e serviços."
-          />
-
-          <View style={{ marginTop: 20 }}>
-            <Image
-              source={{ uri: "https://media.istockphoto.com/id/1327353834/pt/foto/judge-gavel-with-justice-lawyers-having-team-meeting-at-law-firm-in-background.jpg?s=612x612&w=0&k=20&c=-KtpnxEDfX8r_VqRt4_x5u1sP3mEdwq7GVaT2flUbNM=" }}
-              style={{ width: '100%', height: 180, borderRadius: 10 }}
-            />
-          </View>
-
-        </View>
-      </ScrollView>
-    );
-  }
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Faça seu login</Text>
+      <TextInput placeholder='Email' style={styles.input} value={email} onChangeText={setEmail} autoCapitalize='none' keyboardType='email-address' />
+      <TextInput placeholder='Senha' style={styles.input} value={senha} onChangeText={setSenha} secureTextEntry />
+      <Button title='Entrar' onPress={handleLogin} />
+      <Text style={styles.register}>Não tem conta? Registre-se</Text>
+    </View>
+  );
 }
 
-export default App;
-
-class Direito extends Component {
-  render() {
-    return (
-      <View style={{
-        backgroundColor: '#fff',
-        borderRadius: 10,
-        marginBottom: 15,
-        overflow: 'hidden',
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-      }}>
-        <Image
-          source={{ uri: this.props.imagem }}
-          style={{ width: '100%', height: 180 }}
-        />
-        <View style={{ padding: 10 }}>
-          <Text style={styles.textoModelo}>{this.props.area}</Text>
-          <Text style={styles.textoInfo}>{this.props.descricao}</Text>
-        </View>
-      </View>
-    );
-  }
+function DashboardScreen({ navigation }) {
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Áreas de Atuação</Text>
+      <Button title='Direito Civil' onPress={() => navigation.navigate('Direito Civil')} />
+      <Button title='Direito Empresarial' onPress={() => navigation.navigate('Direito Empresarial')} />
+      <Button title='Direito Trabalhista' onPress={() => navigation.navigate('Direito Trabalhista')} />
+    </ScrollView>
+  );
 }
 
-const styles = {
-  textoModelo: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    fontFamily: Platform.select({
-      android: 'sans-serif-medium',
-      ios: 'Arial-BoldMT'
-    }),
-    marginBottom: 5
-  },
-  textoInfo: {
-    fontSize: 14,
-    fontFamily: Platform.select({
-      android: 'sans-serif',
-      ios: 'Arial'
-    }),
-    textAlign: 'justify'
-  }
-};
+function CivilScreen() {
+  return (
+    <ScrollView contentContainerStyle={styles.areaContainer}>
+      <Text style={styles.areaTitle}>Direito Civil</Text>
+      <Text style={styles.areaText}>
+        O Direito Civil trata das relações privadas entre cidadãos. Exemplos:
+        {'\n'}- Compra e venda de imóveis
+        {'\n'}- Divórcios e pensão alimentícia
+        {'\n'}- Contratos de aluguel
+      </Text>
+    </ScrollView>
+  );
+}
+
+function EmpresarialScreen() {
+  return (
+    <ScrollView contentContainerStyle={styles.areaContainer}>
+      <Text style={styles.areaTitle}>Direito Empresarial</Text>
+      <Text style={styles.areaText}>
+        O Direito Empresarial regula as atividades comerciais e empresariais. Exemplos:
+        {'\n'}- Abertura de empresas
+        {'\n'}- Contratos comerciais
+        {'\n'}- Recuperação judicial
+      </Text>
+    </ScrollView>
+  );
+}
+
+function TrabalhistaScreen() {
+  return (
+    <ScrollView contentContainerStyle={styles.areaContainer}>
+      <Text style={styles.areaTitle}>Direito Trabalhista</Text>
+      <Text style={styles.areaText}>
+        O Direito Trabalhista protege os direitos do trabalhador. Exemplos:
+        {'\n'}- Rescisão de contrato sem justa causa
+        {'\n'}- Horas extras e adicional noturno
+        {'\n'}- Reclamações na Justiça do Trabalho
+      </Text>
+    </ScrollView>
+  );
+}
+
+function ApiScreen() {
+  const [processo, setProcesso] = useState('');
+  const [autor, setAutor] = useState('');
+  const [reu, setReu] = useState('');
+  const [email, setEmail] = useState('');
+
+  const handleConsulta = () => {
+    if (!processo || !autor || !reu || !email) {
+      Alert.alert('Preencha todos os campos');
+      return;
+    }
+    Alert.alert('Consulta enviada!', `Processo: ${processo}`);
+  };
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Confira seu processo</Text>
+      <TextInput placeholder='Número do processo' style={styles.input} value={processo} onChangeText={setProcesso} />
+      <TextInput placeholder='Autor' style={styles.input} value={autor} onChangeText={setAutor} />
+      <TextInput placeholder='Réu' style={styles.input} value={reu} onChangeText={setReu} />
+      <TextInput placeholder='Seu e-mail' style={styles.input} value={email} onChangeText={setEmail} keyboardType='email-address' autoCapitalize='none' />
+      <Button title='Consultar via API' onPress={handleConsulta} />
+    </ScrollView>
+  );
+}
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Drawer.Navigator initialRouteName="Login">
+        <Drawer.Screen name="Login" component={LoginScreen} options={{ drawerItemStyle: { height: 0 } }} />
+        <Drawer.Screen name="Dashboard" component={DashboardScreen} />
+        <Drawer.Screen name="Direito Civil" component={CivilScreen} />
+        <Drawer.Screen name="Direito Empresarial" component={EmpresarialScreen} />
+        <Drawer.Screen name="Direito Trabalhista" component={TrabalhistaScreen} />
+        <Drawer.Screen name="Consultar Processo" component={ApiScreen} />
+      </Drawer.Navigator>
+    </NavigationContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', padding: 20 },
+  title: { fontSize: 24, marginBottom: 20, textAlign: 'center' },
+  input: { height: 40, borderColor: '#ccc', borderWidth: 1, marginBottom: 10, paddingHorizontal: 10 },
+  register: { marginTop: 15, textAlign: 'center' },
+  areaContainer: { flexGrow: 1, padding: 20, justifyContent: 'center' },
+  areaTitle: { fontSize: 22, marginBottom: 10, textAlign: 'center' },
+  areaText: { fontSize: 16, lineHeight: 24 },
+});
+

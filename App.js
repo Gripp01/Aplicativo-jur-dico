@@ -1,136 +1,200 @@
-// App.js
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, View, Text, TextInput, Button, FlatList, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createDrawerNavigator } from '@react-navigation/drawer';
+import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
+import { createStackNavigator } from '@react-navigation/stack';
+import { initializeApp } from 'firebase/app';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth';
+import { getFirestore, collection, getDocs } from 'firebase/firestore';
+
+const firebaseConfig = {
+  apiKey: 'YOUR_API_KEY',
+  authDomain: 'YOUR_AUTH_DOMAIN',
+  projectId: 'YOUR_PROJECT_ID',
+  storageBucket: 'YOUR_STORAGE_BUCKET',
+  messagingSenderId: 'YOUR_SENDER_ID',
+  appId: 'YOUR_APP_ID'
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 const Drawer = createDrawerNavigator();
+const Stack = createStackNavigator();
+
+function useCustomFetch(apiUrl) {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch(apiUrl);
+        const json = await res.json();
+        setData(json);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [apiUrl]);
+
+  return { data, loading };
+}
 
 function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleLogin = () => {
-    if (email === 'teste@email.com' && senha === '1234') {
-      Alert.alert('✅ Login correto');
-      navigation.navigate('Dashboard');
-    } else {
-      Alert.alert('❌ Login incorreto');
-    }
+    signInWithEmailAndPassword(auth, email, password)
+      .then(() => {})
+      .catch(error => alert(error.message));
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Faça seu login</Text>
-      <TextInput placeholder='Email' style={styles.input} value={email} onChangeText={setEmail} autoCapitalize='none' keyboardType='email-address' />
-      <TextInput placeholder='Senha' style={styles.input} value={senha} onChangeText={setSenha} secureTextEntry />
-      <Button title='Entrar' onPress={handleLogin} />
-      <Text style={styles.register}>Não tem conta? Registre-se</Text>
+      <Text>Login</Text>
+      <TextInput placeholder="Email" value={email} onChangeText={setEmail} style={styles.input} />
+      <TextInput placeholder="Senha" secureTextEntry value={password} onChangeText={setPassword} style={styles.input} />
+      <Button title="Entrar" onPress={handleLogin} />
     </View>
   );
 }
 
-function DashboardScreen({ navigation }) {
+function DashboardScreen() {
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Áreas de Atuação</Text>
-      <Button title='Direito Civil' onPress={() => navigation.navigate('Direito Civil')} />
-      <Button title='Direito Empresarial' onPress={() => navigation.navigate('Direito Empresarial')} />
-      <Button title='Direito Trabalhista' onPress={() => navigation.navigate('Direito Trabalhista')} />
-    </ScrollView>
+    <View style={styles.container}>
+      <Text>Dashboard</Text>
+    </View>
   );
 }
 
 function CivilScreen() {
   return (
-    <ScrollView contentContainerStyle={styles.areaContainer}>
-      <Text style={styles.areaTitle}>Direito Civil</Text>
-      <Text style={styles.areaText}>
-        O Direito Civil trata das relações privadas entre cidadãos. Exemplos:
-        {'\n'}- Compra e venda de imóveis
-        {'\n'}- Divórcios e pensão alimentícia
-        {'\n'}- Contratos de aluguel
-      </Text>
-    </ScrollView>
+    <View style={styles.container}>
+      <Text>Direito Civil</Text>
+    </View>
   );
 }
 
 function EmpresarialScreen() {
   return (
-    <ScrollView contentContainerStyle={styles.areaContainer}>
-      <Text style={styles.areaTitle}>Direito Empresarial</Text>
-      <Text style={styles.areaText}>
-        O Direito Empresarial regula as atividades comerciais e empresariais. Exemplos:
-        {'\n'}- Abertura de empresas
-        {'\n'}- Contratos comerciais
-        {'\n'}- Recuperação judicial
-      </Text>
-    </ScrollView>
+    <View style={styles.container}>
+      <Text>Direito Empresarial</Text>
+    </View>
   );
 }
 
 function TrabalhistaScreen() {
   return (
-    <ScrollView contentContainerStyle={styles.areaContainer}>
-      <Text style={styles.areaTitle}>Direito Trabalhista</Text>
-      <Text style={styles.areaText}>
-        O Direito Trabalhista protege os direitos do trabalhador. Exemplos:
-        {'\n'}- Rescisão de contrato sem justa causa
-        {'\n'}- Horas extras e adicional noturno
-        {'\n'}- Reclamações na Justiça do Trabalho
-      </Text>
-    </ScrollView>
+    <View style={styles.container}>
+      <Text>Direito Trabalhista</Text>
+    </View>
   );
 }
 
 function ApiScreen() {
-  const [processo, setProcesso] = useState('');
-  const [autor, setAutor] = useState('');
-  const [reu, setReu] = useState('');
-  const [email, setEmail] = useState('');
+  const { data, loading } = useCustomFetch('https://jsonplaceholder.typicode.com/posts');
 
-  const handleConsulta = () => {
-    if (!processo || !autor || !reu || !email) {
-      Alert.alert('Preencha todos os campos');
-      return;
-    }
-    Alert.alert('Consulta enviada!', `Processo: ${processo}`);
-  };
+  if (loading) return <ActivityIndicator size="large" />;
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Confira seu processo</Text>
-      <TextInput placeholder='Número do processo' style={styles.input} value={processo} onChangeText={setProcesso} />
-      <TextInput placeholder='Autor' style={styles.input} value={autor} onChangeText={setAutor} />
-      <TextInput placeholder='Réu' style={styles.input} value={reu} onChangeText={setReu} />
-      <TextInput placeholder='Seu e-mail' style={styles.input} value={email} onChangeText={setEmail} keyboardType='email-address' autoCapitalize='none' />
-      <Button title='Consultar via API' onPress={handleConsulta} />
-    </ScrollView>
+    <FlatList
+      data={data}
+      keyExtractor={item => item.id.toString()}
+      renderItem={({ item }) => <Text style={styles.item}>{item.title}</Text>}
+    />
+  );
+}
+
+function ProfileScreen() {
+  const [userData, setUserData] = useState([]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const snapshot = await getDocs(collection(db, 'users'));
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setUserData(data);
+    };
+    fetchUserData();
+  }, []);
+
+  return (
+    <FlatList
+      data={userData}
+      keyExtractor={item => item.id}
+      renderItem={({ item }) => <Text style={styles.item}>{item.name}</Text>}
+    />
+  );
+}
+
+function CustomDrawerContent(props) {
+  return (
+    <DrawerContentScrollView {...props}>
+      <DrawerItemList {...props} />
+    </DrawerContentScrollView>
+  );
+}
+
+function AppNavigator() {
+  return (
+    <Drawer.Navigator drawerContent={props => <CustomDrawerContent {...props} />}>
+      <Drawer.Screen name="Dashboard" component={DashboardScreen} />
+      <Drawer.Screen name="Direito Civil" component={CivilScreen} />
+      <Drawer.Screen name="Direito Empresarial" component={EmpresarialScreen} />
+      <Drawer.Screen name="Direito Trabalhista" component={TrabalhistaScreen} />
+      <Drawer.Screen name="Consultar Processo" component={ApiScreen} />
+      <Drawer.Screen name="Perfil" component={ProfileScreen} />
+    </Drawer.Navigator>
   );
 }
 
 export default function App() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, user => {
+      setUser(user);
+      setLoading(false);
+    });
+    return unsubscribe;
+  }, []);
+
+  if (loading) {
+    return <ActivityIndicator size="large" style={{ flex: 1, justifyContent: 'center' }} />;
+  }
+
   return (
     <NavigationContainer>
-      <Drawer.Navigator initialRouteName="Login">
-        <Drawer.Screen name="Login" component={LoginScreen} options={{ drawerItemStyle: { height: 0 } }} />
-        <Drawer.Screen name="Dashboard" component={DashboardScreen} />
-        <Drawer.Screen name="Direito Civil" component={CivilScreen} />
-        <Drawer.Screen name="Direito Empresarial" component={EmpresarialScreen} />
-        <Drawer.Screen name="Direito Trabalhista" component={TrabalhistaScreen} />
-        <Drawer.Screen name="Consultar Processo" component={ApiScreen} />
-      </Drawer.Navigator>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {user ? (
+          <Stack.Screen name="App" component={AppNavigator} />
+        ) : (
+          <Stack.Screen name="Login" component={LoginScreen} />
+        )}
+      </Stack.Navigator>
     </NavigationContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
-  title: { fontSize: 24, marginBottom: 20, textAlign: 'center' },
-  input: { height: 40, borderColor: '#ccc', borderWidth: 1, marginBottom: 10, paddingHorizontal: 10 },
-  register: { marginTop: 15, textAlign: 'center' },
-  areaContainer: { flexGrow: 1, padding: 20, justifyContent: 'center' },
-  areaTitle: { fontSize: 22, marginBottom: 10, textAlign: 'center' },
-  areaText: { fontSize: 16, lineHeight: 24 },
-});
-
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 16
+  },
+  input: {
+    borderWidth: 1,
+    padding: 8,
+    marginVertical: 8
+  },
+  item: {
+    padding: 10,
+    borderBottomWidth: 1
+  }
+})
